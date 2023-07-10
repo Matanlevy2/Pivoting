@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find manipulator_sim)/world/empty_world.world"/> <!-- Note: the world_name is with respect to GAZEBO_RESOURCE_PATH environmental variable -->
+    <arg name="paused" value="true"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="recording" value="false"/>
+    <arg name="debug" value="false"/>
+    <arg name="verbose" value = "true"/>
+  </include>
+  
+       <group ns="/gen3">
+        <!-- Robot model -->
+        <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find kinova_description)/urdf/gen3_position_interface_tool_light.xacro'" />
+        <arg name="x" default="0"/>
+        <arg name="y" default="0"/>
+        <arg name="z" default="0."/>
+      
+        
+        <!-- Spawn the robot model -->
+        <node name="mybot_spawn" pkg="gazebo_ros" type="spawn_model" output="screen"
+              args="-urdf -param robot_description -model gen3 -x $(arg x) -y $(arg y) -z $(arg z)
+              -J Actuator1 0.0
+              -J Actuator2 0.0
+              -J Actuator3 0.0
+              -J Actuator4 1.57
+              -J Actuator5 0.0
+              -J Actuator6 0.0
+              -J Actuator7 1.57" />
+        
+        <rosparam command="load" file="$(find kinova_description)/config/joints_control_pos.yaml" />       
+
+        <node name="controller_spawner" pkg="controller_manager" type="spawner"
+            respawn="false" output="screen" ns="/gen3"
+            args="--namespace=/gen3
+            joint_state_controller
+            joint1_position_controller
+            joint2_position_controller
+            joint3_position_controller
+            joint4_position_controller
+            joint5_position_controller
+            joint6_position_controller
+            joint7_position_controller
+            joint8_position_controller
+            --timeout 60">
+        </node>
+        
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+  
+  
+  </group>
+    
+
+          
+</launch>
